@@ -1,6 +1,6 @@
 import express from 'express'
 import dotenv from 'dotenv'
-import { connection } from './lib/db.js'
+import { checkDatabaseConnection } from './lib/db.js'
 import authRoutes from './routes/auth.route.js'
 
 dotenv.config()
@@ -8,9 +8,20 @@ const app = express()
 
 const PORT = process.env.PORT
 
+app.use(express.json())
+
 app.use('/api/auth', authRoutes)
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port: ${PORT}`)
-    connection()
-})
+const startServer = async () => {
+    const isDbConnected = await checkDatabaseConnection()
+
+    if (!isDbConnected) {
+        console.log('Server cannot be connected to Database')
+    }
+
+    app.listen(PORT, () => {
+        console.log(`Server is running on port: ${PORT}`)
+    })
+}
+
+startServer()

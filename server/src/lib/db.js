@@ -19,9 +19,11 @@ export const checkDatabaseConnection = async () => {
         conn = await pool.getConnection()
         await conn.ping()
         console.log('Database connection successful')
+        
         return true
     } catch (err) {
         console.log('Database connection failed', err)
+
         return false
     } finally {
         if (conn) conn.release()

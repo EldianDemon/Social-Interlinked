@@ -16,15 +16,15 @@ export const protectRoute = async (req, res, next) => { //next is calling next f
             return res.status(401).json({ message: 'You are Unauthorized - Invalid Token' })
         }
 
-        const user = await pool.query(
-            'SELECT user_id, fullName, email, createdAt, updatedAt FROM Users WHERE user_id = ?', [decodedCookie.userId]
+        const [userId] = await pool.query(
+            'SELECT user_id FROM Users WHERE user_id = ?', [decodedCookie.userId]
         )
 
-        if (user.length < 1) {
+        if (!userId[0]) {
             return res.status(404).json({ message: 'User not found' })
         }
 
-        req.user = user[0][0] //add user to request
+        req.userId = userId[0].user_id
 
         next() //then send this user with request to next func
 

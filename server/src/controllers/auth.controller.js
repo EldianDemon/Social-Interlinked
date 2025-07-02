@@ -1,8 +1,6 @@
-import { pool } from '../lib/db.js'
+import { getUser, getUserAvatar, pool, updateUserAvatar } from '../lib/db.js'
 import bcrypt from 'bcryptjs'
 import multer from 'multer'
-import path from 'path'
-import fs from 'fs/promises'
 import { generateToken } from '../lib/utils.js'
 
 export const signup = async (req, res) => {
@@ -125,51 +123,32 @@ export const updateProfile = async (req, res) => {
 
     try {
 
-        const user = req.user
-      
-        const [userRows] = await pool.query(
-            'SELECT profilePic FROM Users WHERE user_id = ?',
-            [user.user_id]
-        )
+        const user = await getUser(req.userId)
 
-        let oldProfilePic = null
-
-        if(userRows.length > 0) {
-            oldProfilePic = userRows[0].profilePic
-        }
+        let oldProfilePic = user?.profilePic
 
         if (req.file) {
 
-            const newProfilePic = `/public/avatars/${req.file.filename}`
+            const newProfilePic = `src/public/avatars/${req.file.filename}`
 
-            await pool.query(
-                'UPDATE Users SET profilePic = ? WHERE user_id = ?', [newProfilePic, user.user_id]
-            )
+            const isUpdated = await updateUserAvatar(user.user_id, newProfilePic, oldProfilePic)
 
-            console.log(oldProfilePic)
-
-            if(oldProfilePic) {
-                try {
-                    const absolutePath = path.join(
-                        process.cwd(),
-                        oldProfilePic.replace('/', 'src/')
-                    )
-
-                    await fs.unlink(absolutePath)
-                    console.log(`Previous avatar has been deleted: ${absolutePath}`)
-                    
-                } catch(err) {
-                    console.log('Error while deleting previous avatar:', err.message)
-                }
+            if (!isUpdated) {
+                console.log('Update file Error')
             }
 
         }
 
-        return res.status(201).json({
+        const avatar = await getUserAvatar(user.user_id)
+
+        return res.status(200).json({
             message: 'You have updated profile avatar',
-            userId: user.user_id,
-            fullName: user.fullName,
-            email: user.email
+            user: {
+                userId: user.user_id,
+                fullName: user.fullName,
+                email: user.email,
+                avatar
+            }
         })
 
     } catch (err) {
@@ -185,5 +164,29 @@ export const updateProfile = async (req, res) => {
         }
 
         return res.status(500).json({ message: 'Internal Server Error' })
+    }
+}
+
+export const checkAuth = async (req, res) => {
+    try {
+        if (req.userId) {
+
+            const user = await getUser(req.userId)
+
+            return res.status(200).json(
+                {
+                    message: 'You are Auth',
+                    user: {
+                        userId: user.user_id,
+                        email: user.email,
+                        fullName: user.fullName
+                    }
+                }
+            )
+        }
+        return res.status(400).json({ message: 'You are not Auth' })
+    } catch (err) {
+        console.log('checkAuth Error:', err)
+        res.status(500).json({ message: 'Internal Server Error' })
     }
 }

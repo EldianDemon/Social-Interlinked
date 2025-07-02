@@ -146,22 +146,5 @@ export const getDirectMessages = async (userId, friendId) => {
 
 export const sendDirectMessage = async (userId, friendId, text, image) => {
 
-    try {
 
-
-        if(image) {
-
-        }
-
-
-        await pool.query(
-            'INSERT INTO Messages (sender_id, receiver_id, text, image) VALUES (?, ?, ?, ?)',
-            [userId, friendId, text, image]
-        )
-
-        return true
-
-    } catch (err) {
-        console.log('sendDirectMessage Error', err)
-    }
 }

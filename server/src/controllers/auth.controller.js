@@ -127,14 +127,17 @@ export const updateProfile = async (req, res) => {
 
         let oldProfilePic = user?.profilePic
 
+        console.log(req.file.fieldname)
+
         if (req.file) {
 
-            const newProfilePic = `src/public/avatars/${req.file.filename}`
+            const newProfilePic = `public/avatars/${req.file.filename}`
 
+            //updating img root in database
             const isUpdated = await updateUserAvatar(user.user_id, newProfilePic, oldProfilePic)
 
             if (!isUpdated) {
-                console.log('Update file Error')
+                console.log('Update file root Error')
             }
 
         }

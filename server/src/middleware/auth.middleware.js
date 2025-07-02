@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken'
 import { pool } from '../lib/db.js'
 
 export const protectRoute = async (req, res, next) => { //next is calling next func in the /update-profile route
+    
     try {
         const token = req.cookies.jwt //jwt name was set by us in generateToken, dont forget about it like you always do
 

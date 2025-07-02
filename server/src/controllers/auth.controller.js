@@ -176,18 +176,36 @@ export const checkAuth = async (req, res) => {
 
             const user = await getUser(req.userId)
 
+            if (!user.profilePic) return user
+
+
+            const absolutePath = path.join(
+                process.cwd(),
+                user.profilePic.startsWith('/') ? user.profilePic.substring(1) : user.profilePic.image
+            )
+
+            await fs.access(absolutePath)
+
+            const fileBuffer = await fs.readFile(absolutePath)
+
             return res.status(200).json(
                 {
+                    success: true,
                     message: 'You are Auth',
                     user: {
                         userId: user.user_id,
                         email: user.email,
-                        fullName: user.fullName
+                        fullName: user.fullName,
+                        avatar: fileBuffer.toString('base64')
                     }
                 }
             )
         }
-        return res.status(400).json({ message: 'You are not Auth' })
+        return res.status(400).json(
+            {
+                success: false, message: 'You are not Auth'
+            }
+        )
     } catch (err) {
         console.log('checkAuth Error:', err)
         res.status(500).json({ message: 'Internal Server Error' })

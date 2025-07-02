@@ -1,4 +1,5 @@
 import express from 'express'
+import cors from 'cors'
 import dotenv from 'dotenv'
 import cookieParser from 'cookie-parser'
 import { checkDatabaseConnection } from './lib/db.js'
@@ -7,6 +8,13 @@ import messageRoutes from './routes/message.route.js'
 
 dotenv.config()
 const app = express()
+
+app.use(cors({
+    origin: 'http://localhost:5173', // Укажите ваш фронтенд-адрес
+    credentials: true, // Разрешите передачу кук и заголовков авторизации
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Разрешенные методы
+    allowedHeaders: ['Content-Type', 'Authorization'] // Разрешенные заголовки
+  }));
 
 const PORT = process.env.PORT
 
